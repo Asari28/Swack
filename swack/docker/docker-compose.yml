@@ -1,0 +1,58 @@
+# ----------------------------------------
+# サーバ公開用docker-composeファイル
+# ----------------------------------------
+version: "3.8"
+
+services:
+  db:
+    container_name: container_postgres
+    image: postgres:15
+    ports:
+      - "5551:5432"
+    networks:
+      - swack-nw
+    volumes:
+      - volume_postgres:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: appdb
+    restart: always
+
+  viewer:
+    container_name: container_pgadmin
+    image: dpage/pgadmin4:latest
+    ports:
+      - "5550:80"
+    networks:
+      - swack-nw
+    volumes:
+      - volume_pgadmin:/var/lib/pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: example@example.com
+      PGADMIN_DEFAULT_PASSWORD: passw0rd
+    depends_on:
+      - db
+    restart: always
+
+  app:
+    container_name: container_app
+    build:
+      dockerfile: DockerFile_app
+    ports:
+      - "5555:8080"
+    networks:
+      - swack-nw
+    depends_on:
+      - db
+    restart: always
+
+volumes:
+  volume_postgres:
+    name: v-pg-swack
+  volume_pgadmin:
+    name: v-pgadmin-swack
+
+networks:
+  swack-nw:

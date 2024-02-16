@@ -1,0 +1,1 @@
+clean package antrun:run@copy-jar -DskipTests=true
